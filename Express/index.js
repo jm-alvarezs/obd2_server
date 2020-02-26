@@ -29,17 +29,8 @@ app.use(
 require("dotenv").config();
 
 db.connect().then(async () => {
-  app.post("/datos", async (req, res, next) => {
-    try {
-      const data = req.body;
-      await db.procedures.insertDato(data.VIN, data.cmdID, data.cmdResult, data.timestamp);
-      res.sendStatus(200);
-    } catch (error) {
-      console.log(chalk.red(error));
-      res.status(500).send(error);
-      next(error);
-    }
-  });
+
+  require("./startup/routes")("/api", app);
 
   app.listen(port, () => {
     console.log("Embebidos Server listening on port " + port);

@@ -1,6 +1,6 @@
 DROP PROCEDURE IF EXISTS getPromedioMinutoCmd;
 DELIMITER //
-CREATE PROCEDURE getPromedioMinutoCmd(IN input_cmdID VARCHAR)
+CREATE PROCEDURE getPromedioMinutoCmd(IN input_cmdID VARCHAR(100))
 BEGIN
 SELECT 
     cmdID,

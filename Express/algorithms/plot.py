@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 def readFile(file):
     f = open(file, "r")
-    s = f.readline()
+    s = f.readline()    
     #array of coordinates
     data = list()
     x = list()
@@ -10,8 +11,8 @@ def readFile(file):
     #while not EOF
     while(s != ""):
         #get x and y as separate values
-        datos = s.split(" ")
-        x_coord = float(datos[0])
+        datos = s.split(",")
+        x_coord = datos[3]
         y_coord = float(datos[1])
         #append to array of separate coordinates
         x.append(x_coord)
@@ -28,4 +29,14 @@ def readFile(file):
     return data, x, y
 
 def main():
-    data, x_training, y_training = readFile("datos.txt")
+    colors = ['blue', 'red', 'green']
+    cmdIDs = ["ENGINE_RPM", "FUEL_CONSUMPTION_RATE", "FUEL_LEVEL"]
+    for i in range(len(cmdIDs)):
+        cmdID = cmdIDs[i]
+        data, x, y = readFile(cmdID+".txt")    
+        plt.scatter(x, y, color=colors[i])
+        line_patch = mpatches.Patch(color=colors[i], label=cmdID)
+        plt.legend(handles=[line_patch])
+        plt.title(cmdID)
+    plt.show()
+main()

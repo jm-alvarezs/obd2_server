@@ -14,6 +14,18 @@ router.get('/', async(req, res, next) => {
     }
 });
 
+router.get('/:cmdID',  async(req, res, next) => {
+    try {        
+        const { cmdID } = req.params;
+        const datos = (await db.procedures.getPromedioMinutoCmd(cmdID));
+        res.status(200).send(datos);
+    } catch (error) {
+        console.log(chalk.red(error));
+        res.status(500).send(error);
+        next(error);
+    }
+});
+
 router.post("/", async (req, res, next) => {
     try {
       const data = req.body;

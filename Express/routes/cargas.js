@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const chalk = require('chalk');
+const db = require('tnc_mysql_connector');
 
 router.post('/', async(req, res, next) => {
     try {        

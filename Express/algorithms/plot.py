@@ -39,4 +39,5 @@ def main():
         plt.legend(handles=[line_patch])
         plt.title(cmdID)
     plt.show()
+
 main()

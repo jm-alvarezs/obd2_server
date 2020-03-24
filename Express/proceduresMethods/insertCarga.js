@@ -3,13 +3,13 @@ let db;
 * insertCarga
 * @summary Call to procedure insertCarga
 * @param {String} VIN
-* @param {Number} latitud
-* @param {Number} longitud
+* @param {String} latitud
+* @param {String} longitud
 * @param {Moment} MomentObject_fecha_hora
 * @return {Array} Returns array of results if procedure has a SELECT 
 * @example
 *
-*	insertCarga('stringExample', 1, 1, new Moment.utc())
+*	insertCarga('stringExample', 'stringExample', 'stringExample', new Moment.utc())
 */
 
 const insertCarga = async (VIN, latitud, longitud, MomentObject_fecha_hora) => {

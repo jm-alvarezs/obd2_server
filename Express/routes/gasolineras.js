@@ -49,7 +49,7 @@ async function getGasolineras(recorridos) {
 
 function getGasolineraCercana(latitud, longitud, range) {
     if(!range) range = 100;
-    const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=gasolinera&inputtype=textquery&fields=name,formatted_address&locationbias=circle:${range}@${latitud},${longitud}&key=${API_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=gasolinera&inputtype=textquery&fields=name,formatted_address,photo&locationbias=circle:${range}@${latitud},${longitud}&key=${API_KEY}`;
     return new Promise((resolve, reject) => {
         axios.get(url).then(res => {
             const { candidates } = res.data;

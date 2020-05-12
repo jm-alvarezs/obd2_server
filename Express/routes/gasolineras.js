@@ -11,11 +11,11 @@ router.get('/:cmdID/:VIN', async(req, res, next) => {
     try {        
         const { cmdID, VIN } = req.params;
         let { limit, offset, numero } = req.query;
-        if(!limit) limit = 10000;
-        if(!offset) offset = 0;
-        if(!numero) numero = 5;
+        if(isNaN(parseInt(limit))) limit = 10000;
+        if(isNaN(parseInt(offset))) offset = 0;
+        if(isNaN(parseInt(numero))) numero = 5;
         const recorridos = (await db.procedures.getDatosVehiculo(cmdID, VIN, limit, offset));
-        const { penmax, fechasmax } = getMejoresRecorridos(recorridos, numero);  
+        const { fechasmax } = getMejoresRecorridos(recorridos, numero);  
         const gasolineras = await getGasolineras(fechasmax);        
         res.status(200).send(gasolineras);
     } catch (error) {

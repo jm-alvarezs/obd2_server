@@ -7,7 +7,10 @@ const db = require('tnc_mysql_connector');
 router.get('/:cmdID/:VIN', async(req, res, next) => {
     try {        
         const { cmdID, VIN } = req.params;
-        const { limit, offset, numero } = req.query;
+        let { limit, offset, numero } = req.query;
+        if(!limit) limit = 10000;
+        if(!offset) offset = 0;
+        if(!numero) numero = 5;
         const recorridos = (await db.procedures.getDatosVehiculo(cmdID, VIN, limit, offset));
         const mejores = getMejoresRecorridos(recorridos, numero);  
         res.status(200).send(mejores);
@@ -18,20 +21,27 @@ router.get('/:cmdID/:VIN', async(req, res, next) => {
     }
 });
 
+async function getGasolineras(recorridos) {
+    
+}
+
 function getMejoresRecorridos(recorridos, numero) {
+    let x = recorridos.map((recorrido, index) => index+1);
+    let y = recorridos.map(recorrido => recorrido.cmdResult);
     let puntoStart=0;
     let puntoEnd=0;
     let contador=0;
     let ver=true;
-    let fechasmax= new Array(numero);
-    let penmax = new Array(numero).fill(9999);
+    let fechasmax= new Array(numero).fill("");
+    let penmax = new Array(numero).fill(-9999);
     let contr=0;
-    while(contador<lista.size()-1){
+    while(contador < recorridos.length-1){
         while(ver){//este es un recorrido
-            if(contador+1<lista.size()){
+            if(contador+1 < recorridos.length){
                 let date1 = recorridos[contador].fecha_hora;
                 let date2 = recorridos[contador+1].fecha_hora;
-                if(diferenciaMinutos(date1,date2)>2){
+                let diff = diferenciaMinutos(date1,date2);
+                if(diff > 2){
                     puntoEnd=contador++;
                     ver=false;
                 } else contador++;
@@ -46,25 +56,25 @@ function getMejoresRecorridos(recorridos, numero) {
             let pendiente = params[0];
             if(pendiente<0 && pendiente>penmax[0]){
                 penmax[0]=pendiente;
-                Array.sort(penmax);                 
+                penmax.sort((a,b) => a > b ? 1 : -1);
                 for(let i=0; i<5; i++){
                 if(penmax[i] === pendiente){                    
                     let k=1;
                     for(let j=0;j<i;j++)
                         fechasmax[j]=fechasmax[k++];              
-                        fechasmax[i]=lista.get(puntoStart).fecha;                        
+                        fechasmax[i]=recorridos[puntoStart].fecha_hora; 
                     }
                 }
-            }   
+            }               
             /*
             let desfase = params[1];               
             let r = calcularCorrelacion(x, y,puntoStart,puntoEnd);
             let r2 = Math.pow(r,2);            
-            System.out.println("\nFecha de inicio de recorrido: "+lista.get(puntoStart).fecha);
-            System.out.println("B0 = "+desfase);
-            System.out.println("B1 = "+pendiente);        
-            System.out.println("r_x_y = "+r);
-            System.out.println("r^2 = "+r2);
+            console.log("\nFecha de inicio de recorrido: "+recorridos[puntoStart].fecha_hora);
+            console.log("B0 = "+desfase);
+            console.log("B1 = "+pendiente);        
+            console.log("r_x_y = "+r);
+            console.log("r^2 = "+r2);            
             */
         }
         ver=true;
@@ -72,16 +82,16 @@ function getMejoresRecorridos(recorridos, numero) {
     }
     /*
     for(let i=0; i<5; i++){
-        System.out.println("\nMayor pendiente negativa: "+penmax[i]);
-        System.out.println("Fecha de mayor pendiente: "+fechasmax[i]);
+        console.log("\nMayor pendiente negativa: "+penmax[i]);
+        console.log("Fecha de mayor pendiente: "+fechasmax[i]);
     }    
-    System.out.println("\nRecorridos: "+contr);
+    console.log("\nRecorridos: "+contr);
     */
-   return { penmax, fechasmax };
+    return { penmax, fechasmax };
 }
 
-function calcularParametros(x, y, inicio, fin) {    
-    let sumatoria_num = calcularSuma(multiplicarArreglos(x, y,inicio,fin),inicio,fin);    
+function calcularParametros(x, y, inicio, fin) {   
+    let sumatoria_num = calcularSuma(multiplicarArreglos(x, y,inicio,fin),inicio,fin);   
     let x_avg = calcularPromedio(x,inicio,fin);    
     let y_avg = calcularPromedio(y,inicio,fin);
     let resta_num = (fin-inicio+1) * x_avg * y_avg;    
@@ -109,7 +119,7 @@ function calcularPromedio(arreglo, inicio, fin) {
 
 function multiplicarArreglos(primero, segundo, inicio, fin) {
     if(primero.length != segundo.length) return [];
-    let multiplicado = new Array(primero.length);
+    let multiplicado = new Array(primero.length).fill(1);
     for(let i = inicio; i < fin+1; i++) {        
         multiplicado[i] = primero[i] * segundo[i];
     }
@@ -131,7 +141,7 @@ function calcularCorrelacion(x, y, inicio, fin) {
 }
 
 function diferenciaMinutos(fecha1, fecha2) {
-    return moment(fecha1).diff(fecha2, "minutes");
+    return moment(fecha2).diff(fecha1, "minutes");
 }
 
 

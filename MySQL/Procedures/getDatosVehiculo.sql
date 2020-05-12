@@ -4,8 +4,8 @@ CREATE PROCEDURE getDatosVehiculo(IN input_cmdID VARCHAR(40), IN input_VIN VARCH
 BEGIN
 SELECT VIN, cmdID, avg(cmdResult) as cmdResult, DATE_FORMAT(fecha_hora, "%Y-%m-%d %h:%i") as fecha_hora
 FROM Dato 
-WHERE cmdID = input_cmdID AND avg(cmdResult) NOT LIKE "NODATA"
 GROUP BY VIN, cmdID, DATE_FORMAT(fecha_hora, "%Y-%m-%d %h:%i")
+HAVING cmdID = input_cmdID AND avg(cmdResult) NOT LIKE "NODATA"
 ORDER BY fecha_hora ASC
 LIMIT input_limit OFFSET input_offset;
 END //

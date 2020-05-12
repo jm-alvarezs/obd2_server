@@ -3,6 +3,9 @@ const router = express.Router();
 const chalk = require('chalk');
 const moment = require("moment");
 const db = require('tnc_mysql_connector');
+const axios = require("axios");
+
+const API_KEY = "AIzaSyAK9Ga71Aoeb9-RbP5X0fwfqyDkhhthVwk";
 
 router.get('/:cmdID/:VIN', async(req, res, next) => {
     try {        
@@ -12,8 +15,9 @@ router.get('/:cmdID/:VIN', async(req, res, next) => {
         if(!offset) offset = 0;
         if(!numero) numero = 5;
         const recorridos = (await db.procedures.getDatosVehiculo(cmdID, VIN, limit, offset));
-        const mejores = getMejoresRecorridos(recorridos, numero);  
-        res.status(200).send(mejores);
+        const { penmax, fechasmax } = getMejoresRecorridos(recorridos, numero);  
+        const gasolineras = await getGasolineras(fechasmax);        
+        res.status(200).send(gasolineras);
     } catch (error) {
         console.log(chalk.red(error));
         res.status(500).send(error);
@@ -22,7 +26,39 @@ router.get('/:cmdID/:VIN', async(req, res, next) => {
 });
 
 async function getGasolineras(recorridos) {
-    
+    let gasolineras = new Array(recorridos.length).fill(1);
+    const promises = [];
+    recorridos.forEach((fecha_hora, index) => {
+        const promise = new Promise((resolve, reject) => {
+            db.procedures.getCargaCercana(fecha_hora).then(async response => {
+                const carga = response[0];
+                const { latitud, longitud } = carga;
+                getGasolineraCercana(latitud, longitud, 50).then(gasolinera => {                    
+                    gasolineras[index] = gasolinera;
+                    resolve();
+                });
+            }).catch(error => {
+                reject(error);
+            })
+        });        
+        promises.push(promise);
+    });
+    await Promise.all(promises);
+    return gasolineras;        
+}
+
+function getGasolineraCercana(latitud, longitud, range) {
+    if(!range) range = 100;
+    const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=gasolinera&inputtype=textquery&fields=name,formatted_address&locationbias=circle:${range}@${latitud},${longitud}&key=${API_KEY}`;
+    return new Promise((resolve, reject) => {
+        axios.get(url).then(res => {
+            const { candidates } = res.data;
+            const gasolinera = candidates[0];
+            resolve(gasolinera);
+        }).catch(error => {
+            throw error;
+        });
+    });    
 }
 
 function getMejoresRecorridos(recorridos, numero) {
